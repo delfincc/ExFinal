@@ -12,5 +12,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
+    //Delete LMAO
+
     //Esto es un comentario xd kkkkk
 }
