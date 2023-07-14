@@ -9,26 +9,44 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
     private EditText usernameEditText;
     private EditText passwordEditText;
-    private FirebaseAuth mAuth;
+    private Button loginButton;
+    private Button signUpButton;
+    private Button forgotPasswordButton;
+    private RequestQueue requestQueue;
+
+    private static final String API_URL = "https://examenfinal-7ffb7-default-rtdb.firebaseio.com/usuarios.json";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mAuth = FirebaseAuth.getInstance();
+        requestQueue = Volley.newRequestQueue(this);
+
         usernameEditText = findViewById(R.id.edtUsuario);
         passwordEditText = findViewById(R.id.edtContraseña);
-        Button loginButton = findViewById(R.id.btnsignin);
-        Button signUpButton = findViewById(R.id.btnsignup);
-        Button forgotPasswordButton = findViewById(R.id.btnfgpassword);
+        loginButton = findViewById(R.id.btnsignin);
+        signUpButton = findViewById(R.id.btnsignup);
+        forgotPasswordButton = findViewById(R.id.btnfgpassword);
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -36,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
                 String username = usernameEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
 
-                signIn(username, password);
+                verifyCredentials(username, password);
             }
         });
 
@@ -57,32 +75,41 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // Verificar si el usuario ya ha iniciado sesión
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            // Si el usuario ya ha iniciado sesión, redirigirlo a la actividad HomeActivity
-            Intent intent = new Intent(MainActivity.this, HomeActivity.class);
-            startActivity(intent);
-            finish();
-        }
-    }
+    private void verifyCredentials(final String username, final String password) {
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, API_URL, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            if (response.has(username)) {
+                                JSONObject userObject = response.getJSONObject(username);
+                                String storedPassword = userObject.getString("password");
 
-    private void signIn(String email, String password) {
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        // El inicio de sesión fue exitoso
-                        Toast.makeText(MainActivity.this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(MainActivity.this, HomeActivity.class);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        // El inicio de sesión falló
-                        Toast.makeText(MainActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
+                                if (password.equals(storedPassword)) {
+                                    // Las credenciales son correctas
+                                    Toast.makeText(MainActivity.this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
+                                    // Realiza las acciones que deseas después de la verificación exitosa
+                                } else {
+                                    // La contraseña es incorrecta
+                                    Toast.makeText(MainActivity.this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
+                                }
+                            } else {
+                                // El usuario no existe
+                                Toast.makeText(MainActivity.this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // Error en la solicitud
+                        Toast.makeText(MainActivity.this, "Error de conexión", Toast.LENGTH_SHORT).show();
                     }
                 });
+
+        requestQueue.add(request);
     }
 }
