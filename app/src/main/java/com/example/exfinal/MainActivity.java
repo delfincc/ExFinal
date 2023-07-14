@@ -9,20 +9,17 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Iterator;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -51,10 +48,14 @@ public class MainActivity extends AppCompatActivity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String username = usernameEditText.getText().toString();
-                String password = passwordEditText.getText().toString();
+                String username = usernameEditText.getText().toString().trim();
+                String password = passwordEditText.getText().toString().trim();
 
-                verifyCredentials(username, password);
+                if (username.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Ingresa el usuario y la contraseña", Toast.LENGTH_SHORT).show();
+                } else {
+                    verifyCredentials(username, password);
+                }
             }
         });
 
@@ -81,19 +82,30 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            if (response.has(username)) {
-                                JSONObject userObject = response.getJSONObject(username);
+                            boolean foundUser = false;
+                            for (Iterator<String> it = response.keys(); it.hasNext(); ) {
+                                String key = it.next();
+                                JSONObject userObject = response.getJSONObject(key);
+                                String storedUsername = userObject.getString("username");
                                 String storedPassword = userObject.getString("password");
 
-                                if (password.equals(storedPassword)) {
-                                    // Las credenciales son correctas
-                                    Toast.makeText(MainActivity.this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
-                                    // Realiza las acciones que deseas después de la verificación exitosa
-                                } else {
-                                    // La contraseña es incorrecta
-                                    Toast.makeText(MainActivity.this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
+                                if (username.equals(storedUsername)) {
+                                    foundUser = true;
+                                    if (password.equals(storedPassword)) {
+                                        // Las credenciales son correctas
+                                        Toast.makeText(MainActivity.this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
+                                        Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+                                        startActivity(intent);
+                                        break;
+                                    } else {
+                                        // La contraseña es incorrecta
+                                        Toast.makeText(MainActivity.this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
+                                        break;
+                                    }
                                 }
-                            } else {
+                            }
+
+                            if (!foundUser) {
                                 // El usuario no existe
                                 Toast.makeText(MainActivity.this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
                             }
