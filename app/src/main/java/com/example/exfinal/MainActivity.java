@@ -82,32 +82,38 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            boolean foundUser = false;
-                            for (Iterator<String> it = response.keys(); it.hasNext(); ) {
-                                String key = it.next();
+                            boolean userExists = false;
+
+                            Iterator<String> keys = response.keys();
+                            while (keys.hasNext()) {
+                                String key = keys.next();
                                 JSONObject userObject = response.getJSONObject(key);
                                 String storedUsername = userObject.getString("username");
                                 String storedPassword = userObject.getString("password");
 
                                 if (username.equals(storedUsername)) {
-                                    foundUser = true;
+                                    userExists = true;
                                     if (password.equals(storedPassword)) {
                                         // Las credenciales son correctas
                                         Toast.makeText(MainActivity.this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
                                         Intent intent = new Intent(MainActivity.this, HomeActivity.class);
                                         startActivity(intent);
-                                        break;
+                                        finish();
+                                        return;
                                     } else {
                                         // La contraseña es incorrecta
                                         Toast.makeText(MainActivity.this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
-                                        break;
+                                        return;
                                     }
                                 }
                             }
 
-                            if (!foundUser) {
+                            if (!userExists) {
                                 // El usuario no existe
                                 Toast.makeText(MainActivity.this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
+                            } else {
+                                // Las credenciales son incorrectas
+                                Toast.makeText(MainActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -125,3 +131,4 @@ public class MainActivity extends AppCompatActivity {
         requestQueue.add(request);
     }
 }
+
