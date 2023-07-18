@@ -43,6 +43,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:onClick="onClick"
             android:text="Productos" />
 
         <Button
@@ -50,13 +51,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:onClick="onClick"
             android:text="Carrito" />
     </LinearLayout>
 
     <FrameLayout
         android:id="@+id/contenedorFragments"
-        android:layout_width="409dp"
-        android:layout_height="555dp"
+        android:layout_width="394dp"
+        android:layout_height="533dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="1dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.428"
