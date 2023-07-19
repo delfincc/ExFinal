@@ -21,11 +21,18 @@ public class CustomListAdapter extends ArrayAdapter<Plato> {
 
     private Context context;
     private List<Plato> platosList;
+    private OnPlatoClickListener onPlatoClickListener;
 
-    public CustomListAdapter(Context context, List<Plato> platosList) {
+    // Definir la interfaz OnPlatoClickListener
+    public interface OnPlatoClickListener {
+        void onPlatoClicked(Plato plato);
+    }
+
+    public CustomListAdapter(Context context, List<Plato> platosList, OnPlatoClickListener listener) {
         super(context, R.layout.platos, platosList);
         this.context = context;
         this.platosList = platosList;
+        this.onPlatoClickListener = listener;
     }
 
     @NonNull
@@ -44,6 +51,9 @@ public class CustomListAdapter extends ArrayAdapter<Plato> {
         TextView textViewPrecio = listItemView.findViewById(R.id.txvPrecio);
         TextView textViewDatos = listItemView.findViewById(R.id.txvDatos);
 
+        textViewNombre.setText(currentPlato.getNombre());
+        textViewPrecio.setText(currentPlato.getPrecio());
+        textViewDatos.setText(currentPlato.getDatos());
 
         // Cargar la imagen con Picasso
         Picasso.get()
@@ -60,11 +70,16 @@ public class CustomListAdapter extends ArrayAdapter<Plato> {
                     }
                 });
 
-        textViewNombre.setText(currentPlato.getNombre());
-        textViewPrecio.setText(currentPlato.getPrecio());
-        textViewDatos.setText(currentPlato.getDatos());
+        // Configurar el clic en el elemento de la lista
+        listItemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (onPlatoClickListener != null) {
+                    onPlatoClickListener.onPlatoClicked(currentPlato);
+                }
+            }
+        });
 
         return listItemView;
     }
 }
-

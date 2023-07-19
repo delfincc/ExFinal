@@ -9,11 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 
-public class ElijaFragment extends Fragment {
+public class elija extends Fragment {
 
 
-
-    public ElijaFragment() {
+    public elija() {
         // Required empty public constructor
     }
 
