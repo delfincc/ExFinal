@@ -43,7 +43,7 @@ public class BoletaFragment extends Fragment implements BoletaListAdapter.OnPlat
     }
 
     public void updateBoleta(Plato plato, int quantityChange) {
-        List<Plato> updatedBoletaList = new ArrayList<>();
+        boolean platoExists = false;
 
         for (Plato p : boletaList) {
             if (p.getNombre().equals(plato.getNombre())) {
@@ -53,21 +53,24 @@ public class BoletaFragment extends Fragment implements BoletaListAdapter.OnPlat
                     p.setCantidad(newQuantity);
                     p.setPrecioTotal(newQuantity * Double.parseDouble(p.getPrecio()));
                 } else {
-                    // Si la nueva cantidad es 0 o menor, no lo agregamos a la lista actualizada (lo eliminamos)
-                    continue;
+                    // Si la nueva cantidad es 0 o negativa, eliminamos el plato de la boleta
+                    boletaList.remove(p);
                 }
+                platoExists = true;
+                break;
             }
-            updatedBoletaList.add(p);
         }
 
-        boletaList = updatedBoletaList;
+        if (!platoExists && quantityChange > 0) {
+            // Si el plato no existe en la boleta y se agregó uno, lo añadimos a la lista
+            plato.setCantidad(quantityChange);
+            plato.setPrecioTotal(quantityChange * Double.parseDouble(plato.getPrecio()));
+            boletaList.add(plato);
+        }
 
         adapter.notifyDataSetChanged();
         updateTotal();
     }
-
-
-
 
     @Override
     public void onPlatoDeleted(Plato plato) {

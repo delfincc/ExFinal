@@ -72,4 +72,5 @@ public class BoletaListAdapter extends BaseAdapter {
         platosList.clear();
         notifyDataSetChanged();
     }
+
 }
